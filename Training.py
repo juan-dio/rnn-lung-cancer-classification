@@ -79,7 +79,7 @@ def evaluate_model(model, X_test, y_test):
 st.title('Lung Cancer Classification Using RNN')
 
 # Memuat dataset
-df = load_data('./survey lung cancer.csv')
+df = load_data('./model/survey lung cancer.csv')
 
 # Menampilkan dataset
 st.subheader("Dataset")
