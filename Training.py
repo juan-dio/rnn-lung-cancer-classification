@@ -76,6 +76,7 @@ def evaluate_model(model, X_test, y_test):
     return conf_matrix, report
 
 # Judul halaman
+st.write("#### Juan Axl Ronaldio Zaka Putra (220411100066)")
 st.title('Lung Cancer Classification Using RNN')
 
 # Memuat dataset
