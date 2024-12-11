@@ -1,6 +1,7 @@
 import streamlit as st
 import numpy as np
 import pickle
+from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import load_model
 
 # Konfigurasi halaman Streamlit
@@ -15,9 +16,21 @@ def load_rnn_model(model_path):
 model_path = './model/rnn_lung_cancer_model.keras'  # Path model RNN
 model = load_rnn_model(model_path)
 
+# Fungsi preprocessing data
+def preprocess_data(inputs):
+    # Normalisasi age
+    minimal, maximal = 21, 87
+    if inputs[0] < minimal:
+        inputs[0] = minimal
+    elif inputs[0] > maximal:
+        inputs[0] = maximal
+    
+    inputs[0] = inputs[0] - minimal / maximal - minimal  # Normalisasi age ke rentang 0-1
+    return inputs
+
 # Fungsi prediksi
 def predict(inputs):
-    inputs_array = np.array(inputs).reshape(1, -1, 1)  # Sesuaikan bentuk data untuk RNN
+    inputs_array = np.array(inputs).reshape(1, -1, 1)
     probability = model.predict(inputs_array)[0][0]
     prediction = 1 if probability > 0.5 else 0
     return probability, prediction
@@ -27,7 +40,7 @@ st.title("Lung Cancer Prediction")
 st.write("Masukkan nilai untuk setiap fitur untuk memprediksi kemungkinan kanker paru-paru.")
 
 # Input fitur dari pengguna
-age = st.slider("Age", min_value=0, max_value=100, value=50)
+age = st.slider("Age", min_value=18, max_value=100, value=50, step=1)
 
 # Ubah gender selectbox menjadi Male dan Female
 gender = st.selectbox("Gender", options=["Female", "Male"])
@@ -80,8 +93,11 @@ inputs = [
     coughing, shortness_of_breath, swallowing_difficulty, chest_pain
 ]
 
+
 # Tombol prediksi
 if st.button("Predict"):
-    probability, prediction = predict(inputs)
+    preprocessed_inputs = preprocess_data(inputs)
+    probability, prediction = predict(preprocessed_inputs)
+    st.write(preprocessed_inputs)
     st.write(f"Predicted Probability: {probability:.2f}")
     st.write(f"Prediction: {'Positive for Lung Cancer' if prediction == 1 else 'Negative for Lung Cancer'}")
