@@ -75,59 +75,67 @@ def evaluate_model(model, X_test, y_test):
     report = classification_report(y_test, y_pred, output_dict=True)
     return conf_matrix, report
 
-# Judul halaman
-st.write("#### Juan Axl Ronaldio Zaka Putra (220411100066)")
-st.title('Lung Cancer Classification Using RNN')
-
 # Memuat dataset
 df = load_data('./model/survey lung cancer.csv')
 
-# Menampilkan dataset
-st.subheader("Dataset")
-st.write(df.head())
-
-st.subheader("Data Description")
-st.write(df.describe())
-st.write("Data Types")
-st.write(df.dtypes)
-
-# Visualisasi distribusi target
-st.subheader("Target Distribution")
-plot_target_distribution(df, target_column='LUNG_CANCER')
-
 # Preprocessing data
-st.subheader("Data Preprocessing")
-st.write("Missing Values:", df.isnull().sum().sum())
-st.write("Duplicated Values:", df.duplicated().sum())
+df_preprocessed = preprocess_data(df)
 
-df = preprocess_data(df)
-st.write("Preprocessed Data")
-st.write(df.head())
-
-# Split data
-st.subheader("Data Splitting")
-X = df.drop(columns=["LUNG_CANCER"])
-y = df["LUNG_CANCER"]
+# Split data menjadi train dan test set
+X = df_preprocessed.drop(columns=["LUNG_CANCER"])
+y = df_preprocessed["LUNG_CANCER"]
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42, stratify=y
 )
-st.write(f"Train Shape: {X_train.shape}, Test Shape: {X_test.shape}")
 
-# Model training
-st.subheader("Model Training")
+# Membangun dan melatih model RNN
 model, history = build_and_train_rnn(X_train, y_train, X_train.shape[1])
 
 # Evaluasi model
-st.subheader("Model Evaluation")
 conf_matrix, report = evaluate_model(model, X_test, y_test)
 
-# Classification Report
-st.write("### Classification Report")
-st.write(pd.DataFrame(report).transpose())
+# Judul halaman
+st.write("##### Juan Axl Ronaldio Zaka Putra (220411100066)")
+st.title('Lung Cancer Classification Using RNN')
 
-# Confusion Matrix
-st.write("### Confusion Matrix")
-fig, ax = plt.subplots(figsize=(3, 3))
-disp = ConfusionMatrixDisplay(confusion_matrix=conf_matrix, display_labels=[0, 1])
-disp.plot(ax=ax)
-st.pyplot(fig)
+# Radio button untuk navigasi
+menu = st.sidebar.radio("Select a step", ["Dataset", "EDA", "Preprocessing", "Model Training", "Evaluation"])
+
+if menu == "Dataset":
+    st.subheader("Dataset")
+    st.write(df)
+
+elif menu == "EDA":
+    st.subheader("Exploratory Data Analysis")
+    st.write("Data Types")
+    st.write(df.dtypes)
+    st.write("#### Data Description")
+    st.write(df.describe())
+    st.write("#### Target Distribution")
+    plot_target_distribution(df, target_column='LUNG_CANCER')
+
+elif menu == "Preprocessing":
+    st.subheader("Data Preprocessing")
+    st.write("Missing Values:", df.isnull().sum().sum())
+    st.write("Duplicated Values:", df.duplicated().sum())
+
+    st.write("#### Preprocessed Data")
+    st.write(df_preprocessed)
+
+elif menu == "Model Training":
+    st.subheader("Model Training")
+    st.write(f"Train Shape: {X_train.shape}, Test Shape: {X_test.shape}")
+
+elif menu == "Evaluation":
+    st.subheader("Model Evaluation")
+
+    # Classification Report
+    st.write("#### Classification Report")
+    st.write(pd.DataFrame(report).transpose())
+
+    # Confusion Matrix
+    st.write("#### Confusion Matrix")
+    fig, ax = plt.subplots(figsize=(3, 3))
+    disp = ConfusionMatrixDisplay(confusion_matrix=conf_matrix, display_labels=[0, 1])
+    disp.plot(ax=ax)
+    st.pyplot(fig)
